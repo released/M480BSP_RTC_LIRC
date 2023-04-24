@@ -162,6 +162,7 @@ void RTC_Init(void)
     /* Enable RTC Tick Interrupt */
     RTC_EnableInt(RTC_INTEN_TICKIEN_Msk);
     NVIC_EnableIRQ(RTC_IRQn);
+
 }
 
 void TMR1_IRQHandler(void)
@@ -355,7 +356,16 @@ void SYS_Init(void)
     CLK_WaitClockReady(CLK_STATUS_LIRCSTB_Msk);
     
     CLK_EnableModuleClock(RTC_MODULE); 
-    CLK_SetModuleClock(RTC_MODULE, CLK_CLKSEL3_RTCSEL_LIRC,  NULL);
+    
+    if ((SYS->CSERVER & SYS_CSERVER_VERSION_Msk) == 0x1)    // M48xGCAE
+    {
+        CLK_SetModuleClock(RTC_MODULE, CLK_CLKSEL3_RTCSEL_LXT,  NULL);
+        RTC -> LXTCTL |= BIT0 | BIT7;
+    }
+    else    // M48xIDAE
+    {
+        CLK_SetModuleClock(RTC_MODULE, CLK_CLKSEL3_RTCSEL_LIRC,  NULL);
+    }
 
 
     /* Update System Core Clock */
